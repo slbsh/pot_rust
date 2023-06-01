@@ -83,7 +83,7 @@ impl EventHandler for Handler {
         loop {
             // shuffle the list if it's enabled in config
             if conf.randomize {
-                conf.status_list.shuffle(&mut rand::thread_rng());
+                conf.status_list.shuffle(&mut thread_rng());
             }
 
             for status in &conf.status_list {
