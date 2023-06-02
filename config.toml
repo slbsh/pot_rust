@@ -74,8 +74,22 @@ enable = true
 
 [replies]
 enable = true 
-chance = 20  # one out of x
-match_iter = 4
+chance = 16  # one out of x
+iterations = 20
+iter_enable = true
+match_blacklist = [
+"i",
+"am",
+"a",
+"an",
+"the",
+"of",
+"you",
+"be",
+"it",
+"are",
+"is"]
+
 trigger = [
 "pot",
 "clay",
@@ -194,6 +208,7 @@ list = [
 "OË AY he Æ ÆÆ OË AÉ GAÉ GAÉ E-E-E-E-E-E-E",
 "skibidipda",
 "check your closet",
+"it's cause I'm a pot, isn't it?!",
 "^^^",
 "this",
 "Are you SURE about that",
@@ -204,5 +219,6 @@ list = [
 "get it away from me!",
 "beanin rn",
 ":Bean_Wiz:",
-"Sounds the same to me!"]
+"Sounds the same to me!",
+"boop"]
 

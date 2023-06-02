@@ -1,7 +1,8 @@
 // struct to load the config into
 #[derive(serde::Deserialize, Clone)]
 pub struct Conf {
-    pub token_file: String,
+    pub token: Option<String>,
+    pub token_file: Option<String>,
     pub permissions: Perms,
     pub status: Stat,
     pub warns: Warns,
@@ -28,7 +29,9 @@ pub struct Stat {
 pub struct Reply {
     pub enable: bool,
     pub chance: u8,
-    pub match_iter: u8,
+    pub iterations: u8,
+    pub iter_enable: bool,
+    pub match_blacklist: Vec<String>,
     pub list: Vec<String>,
     pub trigger: Vec<String>,
 }

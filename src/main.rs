@@ -9,6 +9,7 @@ use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::process::exit;
 use once_cell::sync::Lazy;
+use rand::distributions::Bernoulli;
 
 use crate::config::*;
 use crate::commands::*;
@@ -28,6 +29,11 @@ pub static CONFIG: Lazy<Conf> = Lazy::new(|| {
         .clone()
 }); 
 
+static REPLY_CHANCE: Lazy<Bernoulli> = Lazy::new(|| 
+    Bernoulli::new(1.0 / CONFIG.replies.chance as f64)
+        .expect("Err Creating a Bernoulli Distribution!")
+);
+
 //passed to commands n such
 pub struct Handler { 
     database: sqlx::SqlitePool,
@@ -39,7 +45,7 @@ Usage: pot <OPTION>
 
 Options:
   -h, --help     Show This Message
-  -c, --config   Change the config file (toml)";
+  -c, --config   Specify the Config File path (toml)";
 
 fn read_args() -> String {
     // Handling stdin args
@@ -127,7 +133,6 @@ impl EventHandler for Handler {
          *  Reply module!
          */
 
-
         // quick shorthand
         let repl = &CONFIG.replies;
 
@@ -137,37 +142,43 @@ impl EventHandler for Handler {
         let message = msg.content.to_lowercase();
 
         // only send the message contains a trigger word or 1 in x chance
-        if !repl.trigger.iter().any(|s| message.contains(s)) 
-            || !thread_rng().gen_range(0..repl.chance) == 0 
+        if !(repl.trigger.iter().any(|t| message.contains(&t.to_lowercase())) 
+            || thread_rng().sample(&*REPLY_CHANCE))
         { return; }
+
+        // dont check for matching words if it's a link
+        // on discord that also means image, gif, &c.
+        if message.starts_with("http") || !repl.iter_enable {
+            let rand_reply = repl.list
+                .choose(&mut thread_rng())
+                .expect("could not choose a random reply!");
+            send(&ctx, &msg, rand_reply).await;
+            return;
+        }
+
+        // shuffle the word list and pick as many as the iterations we want
+        let mut rand_replies = repl.list.clone();
+        rand_replies.shuffle(&mut thread_rng());
+        let rand_replies: Vec<String> = rand_replies
+            .into_iter()
+            .take(repl.iterations as usize)
+            .collect();
 
         // check if a random reply and the message share a word
         // if not, pick another random reply 
-        // after 3 failed attempts just send the last one
-        let mut attempts = 0;
-        loop {
-            // pick a random reply from the list
-            let rand_reply: &str = repl.list
-                .choose(&mut thread_rng())
-                .expect("Failed to Pick a Pot Reply");
-                
-            // dont check for matching words if it's a link
-            // on discord that also means image, gif, &c.
-            if message.starts_with("http") {
-                send(&ctx, &msg, rand_reply).await;
-                break;
-            }
-
-            // split the random reply into separate words so we can compare
-            let reply_words: Vec<&str> = rand_reply
+        // after x failed attempts just send the last one
+        for (i, reply) in rand_replies.iter().enumerate() {
+            // compare the words of the reply to the message,
+            // ignoring blacklisted ones
+            let is_match: bool = message
                 .split_whitespace()
-                .collect();
+                .filter(|w| !repl.match_blacklist.contains(&w.to_string()))
+                .any(|w| reply.contains(w));
 
-            attempts += 1;
-
-            if reply_words.iter().any(|w| message.contains(w)) || attempts >= repl.match_iter {
-                send(&ctx, &msg, rand_reply).await;
-                break;
+            // send anyway if the number of attempts is over a threashold
+            if i == repl.iterations as usize - 1 || is_match {
+                send(&ctx, &msg, reply).await;
+                return;
             }
         }
     }
@@ -178,8 +189,21 @@ impl EventHandler for Handler {
  */
 #[tokio::main]
 async fn main() {
-    let token = fs::read_to_string(&CONFIG.token_file)
-        .expect("Err Reading Token File!");
+    let token: String;
+
+    if let Some(content) = &CONFIG.token {
+        if content.is_empty() {
+            eprintln!("no token provided!");
+            exit(2);
+        }
+        token = content.to_string();
+    } else if let Some(file) = &CONFIG.token_file {
+        token = fs::read_to_string(file)
+            .expect("Could not Read Token File");
+    } else {
+        eprintln!("no token provided!");
+        exit(2);
+    }
 
     let database = sqlx::sqlite::SqlitePoolOptions::new()
         // change this if more throughput is needed
