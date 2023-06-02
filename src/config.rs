@@ -28,6 +28,7 @@ pub struct Stat {
 pub struct Reply {
     pub enable: bool,
     pub chance: u8,
+    pub match_iter: u8,
     pub list: Vec<String>,
     pub trigger: Vec<String>,
 }

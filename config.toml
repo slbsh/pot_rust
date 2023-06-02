@@ -75,6 +75,7 @@ enable = true
 [replies]
 enable = true 
 chance = 20  # one out of x
+match_iter = 4
 trigger = [
 "pot",
 "clay",
@@ -202,5 +203,6 @@ list = [
 "a white crayon is more useful than you",
 "get it away from me!",
 "beanin rn",
-":Bean_Wiz:"]
+":Bean_Wiz:",
+"Sounds the same to me!"]
 

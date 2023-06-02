@@ -165,8 +165,7 @@ impl EventHandler for Handler {
 
             attempts += 1;
 
-            if reply_words.iter().any(|w| message.contains(w)) || attempts > 3 {
-                println!("{}", rand_reply);
+            if reply_words.iter().any(|w| message.contains(w)) || attempts >= repl.match_iter {
                 send(&ctx, &msg, rand_reply).await;
                 break;
             }
