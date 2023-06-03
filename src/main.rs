@@ -39,8 +39,8 @@ pub struct Handler {
     database: sqlx::SqlitePool,
 }
 
-static HELP_MESSAGE: &str = "
-pot - The WickedWiz Discord Bot!
+static HELP_MESSAGE: &str =
+"pot - The WickedWiz Discord Bot!
 Usage: pot <OPTION>
 
 Options:
@@ -175,7 +175,7 @@ impl EventHandler for Handler {
                 .filter(|w| !repl.match_blacklist.contains(&w.to_string()))
                 .any(|w| reply.contains(w));
 
-            // send anyway if the number of attempts is over a threashold
+            // send anyway if the number of attempts is over a threshold
             if i == repl.iterations as usize - 1 || is_match {
                 send(&ctx, &msg, reply).await;
                 return;
@@ -189,21 +189,17 @@ impl EventHandler for Handler {
  */
 #[tokio::main]
 async fn main() {
-    let token: String;
-
-    if let Some(content) = &CONFIG.token {
-        if content.is_empty() {
-            eprintln!("no token provided!");
-            exit(2);
-        }
-        token = content.to_string();
-    } else if let Some(file) = &CONFIG.token_file {
-        token = fs::read_to_string(file)
-            .expect("Could not Read Token File");
-    } else {
-        eprintln!("no token provided!");
-        exit(2);
-    }
+    // read config for token, if empty read config for the token file
+    // then read that file to extract the token
+    let token: String = CONFIG.token.as_ref()
+        .map(|t| t.to_string())
+        .or_else(|| {
+            CONFIG.token_file.as_ref().and_then(|file| {
+                Some(fs::read_to_string(file)
+                    .expect("Could not read token file!"))
+            })
+        })
+        .expect("No token provided!");
 
     let database = sqlx::sqlite::SqlitePoolOptions::new()
         // change this if more throughput is needed

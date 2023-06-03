@@ -1,6 +1,6 @@
 [package]
 name = "pot"
-version = "0.1.0"
+version = "0.2.2"
 authors = ["Anthony slab <contact@anthonyslab.org>"]
 edition = "2021"
 
@@ -21,3 +21,5 @@ opt-level = 'z'
 lto = true
 codegen-units = 1
 strip = true
+debug = false
+panic = 'abort'

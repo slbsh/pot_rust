@@ -1,5 +1,7 @@
+use serde::Deserialize;
+
 // struct to load the config into
-#[derive(serde::Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct Conf {
     pub token: Option<String>,
     pub token_file: Option<String>,
@@ -9,7 +11,7 @@ pub struct Conf {
     pub replies: Reply,
 }
 
-#[derive(serde::Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct Perms {
     pub owners: Vec<String>,
     pub mods: Vec<String>,
@@ -17,7 +19,7 @@ pub struct Perms {
 }
 
 // config struct for statuses
-#[derive(serde::Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct Stat {
     pub enable: bool,
     pub status_delay: u16,
@@ -25,7 +27,7 @@ pub struct Stat {
     pub status_list: Vec<String>,
 }
 
-#[derive(serde::Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct Reply {
     pub enable: bool,
     pub chance: u8,
@@ -36,7 +38,7 @@ pub struct Reply {
     pub trigger: Vec<String>,
 }
 
-#[derive(serde::Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct Warns {
     pub enable: bool,
 }

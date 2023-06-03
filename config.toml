@@ -1,8 +1,12 @@
+# Optional, not using it given that this config gets pushed to github
+# token = "TOKEN_GOES_HERE" 
 token_file = "token"
 
 [permissions]
+# Anthony slab, Juna
 owners = ["627015977233678336", "308203742736678914"]
-mods = ["438569265831084033", "492665061568151572", "322443039953911808"]
+# Oven, Arctic Protoype, Kraglynn Geashi
+mods = ["438569265831084033", "492665061568151572", "322443039953911808"] 
 replies = [
 "Fuck You, Permission Denied",
 "You think like I drive",
@@ -75,7 +79,7 @@ enable = true
 [replies]
 enable = true 
 chance = 16  # one out of x
-iterations = 20
+iterations = 4
 iter_enable = true
 match_blacklist = [
 "i",
@@ -88,7 +92,11 @@ match_blacklist = [
 "be",
 "it",
 "are",
-"is"]
+"is",
+"no",
+"yes",
+"so",
+"for"]
 
 trigger = [
 "pot",
@@ -99,7 +107,8 @@ trigger = [
 "hey",
 "ahoy",
 "welcome",
-"@De Pot#8262"] 
+"@De Pot#8262",
+"<@971815908572020747>"] 
 
 list = [
 "no",
