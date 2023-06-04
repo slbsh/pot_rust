@@ -3,48 +3,16 @@ use chrono::Local;
 use serenity::model::channel::Message;
 use serenity::client::Context;
 use std::process::{exit, Command};
-use crate::{Handler, CONFIG};
-use rand::thread_rng;
 use sqlx::query;
-use rand::prelude::SliceRandom;
 
-// func for sending messages with batteries included
-pub async fn send(ctx: &Context, msg: &Message, cnt: &str) {
-    if let Err(why) = msg.reply(ctx, cnt).await {
-        println!("Message Err: {:?}", why);
-    }
-} 
-
-fn idiot_reply() -> String {
-    let idiot_reply: String = CONFIG.permissions.replies
-        .choose(&mut thread_rng())
-        .expect("Err Choosing an Idiot Reply!")
-        .to_string();
-
-    idiot_reply
-}
-
-// get user permissions
-// 0 - none, 1 - mod, 2 - owner
-fn get_perms(msg: &Message) -> u8 { 
-    if CONFIG.permissions.mods.contains(&msg.author.id.to_string()) {
-        return 1;
-    }
-
-    if CONFIG.permissions.owners.contains(&msg.author.id.to_string()) {
-        return 2;
-    }
-    
-    return 0;
-}
+use crate::helpers::*; 
+use crate::config::reload_config;
+use crate::Handler;
 
 // list warns
 pub async fn command_ls(handler: &Handler, ctx: &Context, msg: &Message) {
     // check if user is allowed to do that
-    if get_perms(msg) == 0 {
-        send(&ctx, &msg, &idiot_reply()).await;
-        return;
-    } 
+    if !check_perms(&ctx, &msg, 1).await { return; } 
 
     // read the whole warns table
     let warns_list = query!("SELECT * FROM warns;")
@@ -79,10 +47,7 @@ pub async fn command_ls(handler: &Handler, ctx: &Context, msg: &Message) {
 // remove a warn
 pub async fn command_rm(handler: &Handler, ctx: &Context, msg: &Message, arg: &str) {
     // handling perms
-    if get_perms(msg) == 0 {
-        send(&ctx, &msg, &idiot_reply()).await;
-        return;
-    }
+    if !check_perms(&ctx, &msg, 1).await { return; } 
 
     let arg = arg.trim();
 
@@ -130,7 +95,7 @@ pub async fn command_roll(ctx: &Context, msg: &Message, arg: &str) {
     let out = out_lines.join("\n");
 
     if out.is_empty() {
-        send(&ctx, &msg, &idiot_reply()).await;
+        send(&ctx, &msg, &idiot_reply().await).await;
         panic!("Shit Went Down!");
     } 
     
@@ -139,33 +104,17 @@ pub async fn command_roll(ctx: &Context, msg: &Message, arg: &str) {
 
 pub async fn command_shutdown(ctx: &Context, msg: &Message) {
     // check if the user is in the owner group
-    if get_perms(msg) <= 1 {
-        send(&ctx, &msg, &idiot_reply()).await;
-        return;
-    }
+    if !check_perms(&ctx, &msg, 2).await { return; } 
 
-    send(&ctx, &msg, "Are you Sure? (Y/n)").await;
-
-    // wait for the confirmation message from the same user
-    if let Some(response) = msg.author.await_reply(&ctx).await {
-        // check if the response is y or Y
-        if response.content.eq_ignore_ascii_case("y") {
-            send(&ctx, &msg, "As You Wish...").await;
-            println!("!shutdown recieved; Exiting...");
-            exit(0); // goodbye everybody!
-
-        } else {
-            send(&ctx, &msg, "Canceled!").await;
-        }
+    if prompt_util(ctx, msg).await {
+        println!("!shutdown recieved; Exiting...");
+        exit(0); // goodbye everybody!
     }
 }
 
 pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: &str) {
     // check perms
-    if get_perms(msg) == 0 { 
-        send(&ctx, &msg, &idiot_reply()).await;
-        return; 
-    }
+    if !check_perms(&ctx, &msg, 1).await { return; } 
             
     // split into tuple
     let arg = arg.split_once(" ").unwrap_or(("", ""));
@@ -193,4 +142,14 @@ pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: 
     .expect("Err Insering into Database");
             
     send(&ctx, &msg, "Warned!").await;
+}
+
+pub async fn command_reload(ctx: &Context, msg: &Message) {
+    // perms check
+    if !check_perms(&ctx, &msg, 2).await { return; } 
+
+    if prompt_util(ctx, msg).await {
+        println!("Reloading Config...");
+        reload_config().await.unwrap();
+    }
 }

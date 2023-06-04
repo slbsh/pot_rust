@@ -1,5 +1,3 @@
-# Optional, not using it given that this config gets pushed to github
-# token = "TOKEN_GOES_HERE" 
 token_file = "token"
 
 [permissions]
