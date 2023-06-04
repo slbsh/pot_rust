@@ -3,9 +3,9 @@
 token_file = "token"
 
 [permissions]
-# Anthony slab, Juna
-owners = ["627015977233678336", "308203742736678914"]
-# Oven, Arctic Protoype, Kraglynn Geashi
+# Anthony slab, Juna, WickedWiz
+owners = ["627015977233678336", "308203742736678914", "404608545091354626"]
+# Owen, Arctic Protoype, Kraglynn Geashi
 mods = ["438569265831084033", "492665061568151572", "322443039953911808"] 
 replies = [
 "Fuck You, Permission Denied",
@@ -79,8 +79,8 @@ enable = true
 [replies]
 enable = true 
 chance = 16  # one out of x
-iterations = 4
-iter_enable = true
+url_blacklist = false  # Ignore links?
+iterations = 3
 match_blacklist = [
 "i",
 "am",
@@ -103,13 +103,14 @@ trigger = [
 "clay",
 "hello",
 "helo",
-"hi",
+# "hi",
 "hey",
 "ahoy",
 "welcome",
 "@De Pot#8262",
 "<@971815908572020747>"] 
 
+# server-specific emotes have been commented out cause they dont work :v
 list = [
 "no",
 "shut that bloody mouth of yours",
@@ -126,7 +127,7 @@ list = [
 "do you feel safe?",
 "are you a bot?",
 "how many fingers am I holding up?",
-":bn:",
+# ":bn:",
 "remember remember",
 "pray",
 "have fun",
@@ -140,7 +141,7 @@ list = [
 "hehe",
 ":face_vomiting:",
 "wake up",
-":peter:",
+# ":peter:",
 ":middle_finger:",
 "fuck yeah!",
 "math rocks!",
@@ -162,7 +163,7 @@ list = [
 "owo",
 "hewwo",
 "f off",
-":WizShut_Lynn:",
+# ":WizShut_Lynn:",
 "yer such a dick",
 "look at this idiot ^^^",
 "I wanna watch!",
@@ -194,6 +195,7 @@ list = [
 "bazinga!",
 "feelin kinda cute rn",
 "beg",
+"shut",
 "time's up",
 "stoopid",
 "if being smart was a crime, you'd be innocent",
@@ -227,7 +229,7 @@ list = [
 "a white crayon is more useful than you",
 "get it away from me!",
 "beanin rn",
-":Bean_Wiz:",
+# ":Bean_Wiz:",
 "Sounds the same to me!",
 "boop"]
 

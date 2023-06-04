@@ -31,7 +31,7 @@ pub struct Reply {
     pub enable: bool,
     pub chance: u8,
     pub iterations: u8,
-    pub iter_enable: bool,
+    pub url_blacklist: bool,
     pub match_blacklist: Vec<String>,
     pub list: Vec<String>,
     pub trigger: Vec<String>,

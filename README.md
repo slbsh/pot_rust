@@ -1,5 +1,5 @@
 # Introduction
-Pot - the WickedWiz discord bot
+Pot - the WickedWiz discord bot  
 
 # Features
 Responds to messages with certian keywords, or at random.  
@@ -15,8 +15,8 @@ This project depends on: http://matteocorti.github.io/roll/
 - run ``make build``
 
 # Credits
-Juna Meinhold - The previous version of Pot 
-Kraglynn Geashi - Most of the Status Messages 
+Juna Meinhold - The previous version of Pot  
+Kraglynn Geashi - Most of the Status Messages   
 
 # Links n Stuff
 WickedWiz Discord - https://discord.gg/aMbZ657dXK  

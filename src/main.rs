@@ -51,7 +51,7 @@ Options:
   -h, --help          Show This Message
 
 Enviroment:
-  POT_CONFIG=<path>   Specify the Config File path (toml)";
+  POT_CONFIG=<path>   Specify the Config File (toml)";
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -110,28 +110,22 @@ impl EventHandler for Handler {
          *  Reply module!
          */
 
-        // quick shorthand
-        let repl = &CONFIG.replies;
-
         // enabled? no bitches?
-        if !repl.enable { return; }
+        if !CONFIG.replies.enable { return; }
 
+        // shorthands
+        let repl = &CONFIG.replies;
         let message = msg.content.to_lowercase();
+
+        // ignore links if they're disabled in config
+        // on discord that means images, gifs, &c
+        if !repl.url_blacklist && message.trim().starts_with("http") 
+        { return; }
 
         // only send the message contains a trigger word or 1 in x chance
         if !(repl.trigger.iter().any(|t| message.contains(&t.to_lowercase())) 
             || thread_rng().sample(&*REPLY_CHANCE))
         { return; }
-
-        // dont check for matching words if it's a link
-        // on discord that also means image, gif, &c.
-        if message.starts_with("http") || !repl.iter_enable {
-            let rand_reply = repl.list
-                .choose(&mut thread_rng())
-                .expect("could not choose a random reply!");
-            send(&ctx, &msg, rand_reply).await;
-            return;
-        }
 
         // shuffle the word list and pick as many as the iterations we want
         let mut rand_replies = repl.list.clone();
