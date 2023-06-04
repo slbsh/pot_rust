@@ -7,7 +7,6 @@ pub struct Conf {
     pub token_file: Option<String>,
     pub permissions: Perms,
     pub status: Stat,
-    pub warns: Warns,
     pub replies: Reply,
 }
 
@@ -36,9 +35,4 @@ pub struct Reply {
     pub match_blacklist: Vec<String>,
     pub list: Vec<String>,
     pub trigger: Vec<String>,
-}
-
-#[derive(Deserialize, Clone)]
-pub struct Warns {
-    pub enable: bool,
 }

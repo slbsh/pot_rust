@@ -161,9 +161,6 @@ pub async fn command_shutdown(ctx: &Context, msg: &Message) {
 }
 
 pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: &str) {
-    // check enabled
-    if !CONFIG.warns.enable { return; }
-
     // check perms
     if get_perms(msg) == 0 { 
         send(&ctx, &msg, &idiot_reply()).await;

@@ -3,7 +3,7 @@ use serenity::prelude::*;
 use serenity::model::channel::Message;
 use serenity::model::gateway::{Ready, Activity};
 
-use std::{fs, time};
+use std::{fs, time, env};
 use tokio::time::sleep;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
@@ -19,8 +19,12 @@ mod commands;
 
 //loading the config into a static
 pub static CONFIG: Lazy<Conf> = Lazy::new(|| {
+    // check env var, if empty pick the default
+    let config_file = env::var("POT_CONFIG")
+        .unwrap_or("config.toml".to_string());
+
     // load from a file
-    let contents = fs::read_to_string(&read_args())
+    let contents = fs::read_to_string(config_file)
        .expect("Err reading Config");
         
     // return the parsed struct
@@ -44,37 +48,10 @@ static HELP_MESSAGE: &str =
 Usage: pot <OPTION>
 
 Options:
-  -h, --help     Show This Message
-  -c, --config   Specify the Config File path (toml)";
+  -h, --help          Show This Message
 
-fn read_args() -> String {
-    // Handling stdin args
-    let args: Vec<String> = std::env::args().collect();
-    let config_file: &str;
-
-    // check if any args are given
-    if let Some(arg) = args.get(1) {
-       match arg.as_str() {
-            "-h" | "--help" => {
-                println!("{}", HELP_MESSAGE);
-                exit(0);
-            },
-            "-c" | "--config" => config_file = &args
-                .get(2)
-                .expect("No config File Given after the -c arg!"),
-            _ => {
-                println!("Invalid Argument!");
-                exit(2);
-            }
-       } 
-    } else {
-        println!("No args provided! Using the defaults.");
-        config_file = "config.toml";
-    }
-
-    config_file.to_string()
-} 
-
+Enviroment:
+  POT_CONFIG=<path>   Specify the Config File path (toml)";
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -189,6 +166,11 @@ impl EventHandler for Handler {
  */
 #[tokio::main]
 async fn main() {
+    if env::args().skip(1).any(|a| a == "-h" || a == "--help") {
+        println!("{}", HELP_MESSAGE);
+        exit(0);
+    }
+
     // read config for token, if empty read config for the token file
     // then read that file to extract the token
     let token: String = CONFIG.token.as_ref()
