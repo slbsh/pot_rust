@@ -1,6 +1,7 @@
 use std::fmt::Write;
 use chrono::Local;
 use serenity::model::channel::Message;
+use serenity::model::id::UserId;
 use serenity::client::Context;
 use std::process::{exit, Command};
 use sqlx::query;
@@ -117,10 +118,10 @@ pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: 
     if !check_perms(&ctx, &msg, 1).await { return; } 
             
     // split into tuple
-    let arg = arg.split_once(" ").unwrap_or(("", ""));
+    let arg: Vec<&str> = arg.split_whitespace().take(2).collect();
 
     // check if tuple is empty
-    if arg.0.is_empty() || arg.1.is_empty() {
+    if arg[0].is_empty() || arg[1].is_empty() {
         send(&ctx, &msg, "Invalid Format\nTry: !warn <@member> <reason>").await; 
         return;
     }
@@ -133,9 +134,19 @@ pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: 
     // database shenanigans
     // collecting: moderator that did the warn, current time, 
     // user that has been warned, the reason for the warn
-    // TODO check if the user actually exist before adding to database
+    let user_id: u64 = arg[0]
+        .replace(&['<', '>', '@'][..], "")
+        .parse()
+        .unwrap_or(0);
+    let user_id = UserId(user_id);
+
+    if let Err(_) = UserId::to_user(user_id, &ctx.http).await {
+        send(&ctx, &msg, &idiot_reply().await).await;
+        return;
+    } 
+
     query!("INSERT INTO warns (usr, rsn, mdr, tme) VALUES (?1, ?2, ?3, ?4);",
-        arg.0, arg.1, user, current_time,
+        arg[0], arg[1], user, current_time,
     )
     .execute(&handler.database)
     .await

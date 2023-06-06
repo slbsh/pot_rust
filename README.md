@@ -1,11 +1,9 @@
-# Introduction
-Pot - the WickedWiz discord bot  
-
 # Features
-Responds to messages with certian keywords, or at random.  
-warning members with the !warn command  
-rolling dice using the !roll command  
-randomized 'Playing \_' status  
+- Responds to messages with certian keywords, or at random.  
+- Warning members with the !warn command  
+- Rolling dice using the !roll command  
+- Randomized 'Playing \_' status  
+- A !reload command, for quickly reloading config on the fly
 
 # Build
 This project depends on: http://matteocorti.github.io/roll/  

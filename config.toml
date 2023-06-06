@@ -80,21 +80,33 @@ chance = 16  # one out of x
 url_blacklist = false  # Ignore links?
 iterations = 3
 match_blacklist = [
+"the",
+"be",
+"to",
+"of",
+"and",
+"a",
+"in",
+"that",
 "i",
+"it",
+"for",
+"not",
+"on",
+"he",
+"as",
+"at",
 "am",
 "a",
 "an",
-"the",
-"of",
 "you",
-"be",
-"it",
 "are",
 "is",
 "no",
 "yes",
 "so",
-"for"]
+"she",
+"they"]
 
 trigger = [
 "pot",
@@ -229,5 +241,7 @@ list = [
 "beanin rn",
 # ":Bean_Wiz:",
 "Sounds the same to me!",
-"boop"]
+"boop",
+"Screw the rules, I have money!",
+"Alright Maggot, listen up, Pot's gonna teach you bout the pecking order"]
 
