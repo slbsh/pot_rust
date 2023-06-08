@@ -120,7 +120,7 @@ pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: 
     // split into tuple
     let arg: Vec<&str> = arg.split_whitespace().take(2).collect();
 
-    // check if tuple is empty
+    // make sure none are empty
     if arg[0].is_empty() || arg[1].is_empty() {
         send(&ctx, &msg, "Invalid Format\nTry: !warn <@member> <reason>").await; 
         return;
@@ -129,11 +129,9 @@ pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: 
     let current_time = Local::now()
         .format("%d-%m-%Y %H:%M")
         .to_string();
-    let user: String = msg.author.id.to_string();
 
-    // database shenanigans
-    // collecting: moderator that did the warn, current time, 
-    // user that has been warned, the reason for the warn
+    //parse arg into userid 
+    let user: String = msg.author.id.to_string();
     let user_id: u64 = arg[0]
         .replace(&['<', '>', '@'][..], "")
         .parse()
@@ -145,6 +143,9 @@ pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: 
         return;
     } 
 
+    // database shenanigans
+    // collecting: moderator that did the warn, current time, 
+    // user that has been warned, the reason for the warn
     query!("INSERT INTO warns (usr, rsn, mdr, tme) VALUES (?1, ?2, ?3, ?4);",
         arg[0], arg[1], user, current_time,
     )
