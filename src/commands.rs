@@ -1,167 +1,166 @@
-use std::fmt::Write;
-use chrono::Local;
 use serenity::model::channel::Message;
 use serenity::model::id::UserId;
 use serenity::client::Context;
-use std::process::{exit, Command};
-use sqlx::query;
+
+use std::fmt::Write;
+use std::error::Error;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use chrono::{TimeZone, Utc};
+use ndm::RollSet;
 
 use crate::helpers::*; 
-use crate::config::reload_config;
-use crate::Handler;
+use crate::config::*;
 
 // list warns
-pub async fn command_ls(handler: &Handler, ctx: &Context, msg: &Message) {
+pub async fn command_ls(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     // check if user is allowed to do that
-    if !check_perms(&ctx, &msg, 1).await { return; } 
+    if !check_perms(&ctx, &msg, 1).await? { return Ok(()); } 
 
-    // read the whole warns table
-    let warns_list = query!("SELECT * FROM warns;")
-        .fetch_all(&handler.database)
-        .await
-        .expect("Database Err: Read");
+    // get warns from config
+    let warns_list = get_config().await?.warns;
+
+    // gett all of the warns
+    if warns_list.is_none() || warns_list.clone().unwrap().is_empty() {
+        msg.reply(&ctx, "No Results!").await?;
+        return Ok(());
+    }       
 
     let mut message: String = Default::default();    
 
     // append each row as a new line
-    for warn in warns_list {
-        writeln!(message, "{} | {} | <@{}> | {}",
-            warn.usr.as_deref().expect("Database Err: No such Field"),
-            warn.rsn.as_deref().expect("Database Err: No such Field"),
-            warn.mdr.as_deref().expect("Database Err: No such Field"),
-            warn.tme.as_deref().expect("Database Err: No such Field"),
-        ).expect("Shit Went Down!");
+    for warn in warns_list.unwrap() {
+        // parse the timestamp into local time
+        let parsed_time = Utc.timestamp_opt(warn.time as i64, 0)
+            .unwrap()
+            .format("%Y-%m-%d %H:%M")
+            .to_string();
+
+        writeln!(message, "User: <@{}> \nReason: {} \nModerator: <@{}> \nTime: {}\n",
+            warn.user, warn.reason, warn.moderator, parsed_time
+        )?;
     }
 
-    if message.is_empty() {
-        send(&ctx, &msg, "No Results!").await;
-        return;
-    }       
-
-    // the title for tellin the user which field is what
-    let title = "Member | Reason | Moderator | Timestamp\n";
-    message.insert_str(0, title);
-
-    send(&ctx, &msg, &message).await;
+    msg.reply(&ctx, &message).await?;
+    Ok(())
 }
 
 // remove a warn
-pub async fn command_rm(handler: &Handler, ctx: &Context, msg: &Message, arg: &str) {
+pub async fn command_rm(ctx: &Context, msg: &Message, arg: &str) -> Result<(), Box<dyn Error>> {
     // handling perms
-    if !check_perms(&ctx, &msg, 1).await { return; } 
+    if !check_perms(&ctx, &msg, 1).await? { return Ok(()); } 
 
-    let arg = arg.trim();
+    let user = arg
+        .trim()
+        .replace(&['<', '>', '@'][..], "")
+        .parse::<u64>();
 
-    if arg.is_empty() {
-        send(&ctx, &msg, "Specify a User, stoopid").await;
-        return;
+    if user.is_err() {
+        msg.reply(&ctx, &idiot_reply().await).await?;
+        return Ok(());
     }
 
-    let exists: bool = query!("SELECT usr FROM warns;")
-            .fetch_all(&handler.database)
-            .await
-            .expect("Database Read Err!")
-            .iter()
-            .any(|row| row.usr.as_deref() == Some(arg));
-            
-    if !exists {
-        send(&ctx, &msg, "No such User in the Database!").await;
-        return;
-    }
+    let mut config = get_config().await?.clone();
 
-    query!("DELETE FROM warns WHERE usr = ?1", arg,)
-        .execute(&handler.database)
-        .await
-        .expect("Err Deleting from Database");
-}
-
-pub async fn command_roll(ctx: &Context, msg: &Message, arg: &str) {
-    // run the roll command
-    let out = Command::new("roll")
-        .arg("-vs").arg(arg)
-        .output()
-        .expect("Failed to run Roll Command!")
-        .stdout;
-    let out = String::from_utf8_lossy(&out).to_string();
-
-    // split output into separate lines
-    let mut out_lines: Vec<&str> = out.lines().collect(); 
-            
-    // remove the second to last line of the output
-    if out_lines.len() > 1 {
-        out_lines.remove(out_lines.len() - 2);
-    }
-
-    // merge the lines back together
-    let out = out_lines.join("\n");
-
-    if out.is_empty() {
-        send(&ctx, &msg, &idiot_reply().await).await;
-        panic!("Shit Went Down!");
-    } 
+    // remove the user that matches
+    config.warns = config.warns.map(|v| {
+        v.into_iter()
+            .filter(|w| w.user != user.clone().unwrap())
+            .collect()
+    });
     
-    send(&ctx, &msg, &out).await;
+    // commit changes!
+    modify_config(config).await?;
+
+    msg.reply(&ctx, &format!("Removed <@{}> from Warns!", user.unwrap())).await?;
+    Ok(())
 }
 
-pub async fn command_shutdown(ctx: &Context, msg: &Message) {
-    // check if the user is in the owner group
-    if !check_perms(&ctx, &msg, 2).await { return; } 
-
-    if prompt_util(ctx, msg).await {
-        println!("!shutdown recieved; Exiting...");
-        exit(0); // goodbye everybody!
+pub async fn command_roll(ctx: &Context, msg: &Message, arg: &str) -> Result<(), Box<dyn Error>> {
+    //parse the args into a dice roll
+    if let Ok(roll) = arg.parse::<RollSet>() {
+        msg.reply(&ctx, &format!("{}", roll)).await?;
+        return Ok(());
     }
+    // if the roll fails to parse
+    msg.reply(&ctx, &idiot_reply().await).await?;
+    Ok(())
 }
 
-pub async fn command_warn(handler: &Handler, ctx: &Context, msg: &Message, arg: &str) {
+pub async fn command_shutdown(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
+    // check if the user is in the owner group
+    if !check_perms(&ctx, &msg, 2).await? { return Ok(()); } 
+
+    if prompt_util(ctx, msg).await? {
+        println!("!shutdown recieved; Exiting...");
+        std::process::exit(0); // goodbye everybody!
+    }
+    Ok(())
+}
+
+pub async fn command_warn(ctx: &Context, msg: &Message, arg: &str) -> Result<(), Box<dyn Error>> {
     // check perms
-    if !check_perms(&ctx, &msg, 1).await { return; } 
+    if !check_perms(&ctx, &msg, 1).await? { return Ok(()); } 
             
-    // split into tuple
-    let arg: Vec<&str> = arg.split_whitespace().take(2).collect();
+    // split into user and reason
+    let arg = arg.trim().split_once(" ").unwrap_or(("", ""));
 
     // make sure none are empty
-    if arg[0].is_empty() || arg[1].is_empty() {
-        send(&ctx, &msg, "Invalid Format\nTry: !warn <@member> <reason>").await; 
-        return;
+    if arg.0.is_empty() || arg.1.is_empty() {
+        msg.reply(&ctx, "Invalid Format\nTry: !warn <@member> <reason>").await?; 
+        return Ok(());
     }
 
-    let current_time = Local::now()
-        .format("%d-%m-%Y %H:%M")
-        .to_string();
+    // get current timestamp
+    let timestamp: u64 = SystemTime::now()
+        .duration_since(UNIX_EPOCH)?
+        .as_secs();
 
     //parse arg into userid 
-    let user: String = msg.author.id.to_string();
-    let user_id: u64 = arg[0]
+    let moderator: u64 = msg.author.id.into();
+    let user: u64 = arg.0
         .replace(&['<', '>', '@'][..], "")
         .parse()
         .unwrap_or(0);
-    let user_id = UserId(user_id);
 
-    if let Err(_) = UserId::to_user(user_id, &ctx.http).await {
-        send(&ctx, &msg, &idiot_reply().await).await;
-        return;
+    // check if the user exists
+    if let Err(_) = UserId::to_user(UserId(user), &ctx.http).await {
+        msg.reply(&ctx, &idiot_reply().await).await?;
+        return Ok(());
     } 
 
-    // database shenanigans
-    // collecting: moderator that did the warn, current time, 
-    // user that has been warned, the reason for the warn
-    query!("INSERT INTO warns (usr, rsn, mdr, tme) VALUES (?1, ?2, ?3, ?4);",
-        arg[0], arg[1], user, current_time,
-    )
-    .execute(&handler.database)
-    .await
-    .expect("Err Insering into Database");
-            
-    send(&ctx, &msg, "Warned!").await;
+    let mut config = get_config().await?.clone();
+
+    // fill out them fields boss
+    let new_warn = Warn {
+        user: user,
+        reason: arg.1.to_string(),
+        moderator: moderator,
+        time: timestamp,
+    };
+
+    // add the new warn to the list
+    if config.warns.is_none() {
+        config.warns = Some(vec![new_warn])
+    } else {
+        config.warns.as_mut().map(|v| v.push(new_warn));
+    }
+
+    // commit the changes
+    modify_config(config).await?;
+
+    // confirm to user
+    msg.reply(&ctx, "Warned!").await?;
+    Ok(())
 }
 
-pub async fn command_reload(ctx: &Context, msg: &Message) {
+pub async fn command_reload(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     // perms check
-    if !check_perms(&ctx, &msg, 2).await { return; } 
+    if !check_perms(&ctx, &msg, 2).await? { return Ok(()); } 
 
-    if prompt_util(ctx, msg).await {
+    if prompt_util(ctx, msg).await? {
         println!("Reloading Config...");
-        reload_config().await.unwrap();
+        reload_config().await?;
     }
+    Ok(())
 }

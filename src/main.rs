@@ -19,9 +19,7 @@ mod helpers;
 mod replies;
 
 //passed to commands n such
-pub struct Handler { 
-    database: sqlx::SqlitePool,
-}
+pub struct Handler { }
 
 static HELP_MESSAGE: &str =
 "pot - The WickedWiz Discord Bot!
@@ -69,38 +67,52 @@ impl EventHandler for Handler {
          * here we parse the input and call commands if needed
          */
 
-        if msg.content.trim() == "!ls" {
-            command_ls(&self, &ctx, &msg).await;
+        if msg.content.trim().starts_with("!ls") {
+            if let Err(why) = command_ls(&ctx, &msg).await {
+                eprintln!("Err running the List command!: {}", why);
+            }
             return;
         }
 
         if let Some(arg) = msg.content.strip_prefix("!rm") {
-            command_rm(&self, &ctx, &msg, arg).await;
+            if let Err(why) = command_rm(&ctx, &msg, arg).await {
+                eprintln!("Err running the Remove command!: {}", why);
+            }
             return;
         }
 
-        if msg.content.trim() == "!reload" {
-            command_reload(&ctx, &msg).await;
+        if msg.content.starts_with("!reload") {
+            if let Err(why) = command_reload(&ctx, &msg).await {
+                eprintln!("Err running the Reload command!: {}", why);
+            }
             return;
         }
 
         if let Some(arg) = msg.content.strip_prefix("!r") {
-            command_roll(&ctx, &msg, arg).await;
+            if let Err(why) = command_roll(&ctx, &msg, arg).await {
+                eprintln!("Err running the Roll command!: {}", why);
+            }
             return;
         }
 
-        if msg.content.trim() == "!shutdown" {
-            command_shutdown(&ctx, &msg).await;
+        if msg.content.starts_with("!shutdown") {
+            if let Err(why) = command_shutdown(&ctx, &msg).await {
+                eprintln!("Err running the Shutdown command!: {}", why);
+            }
             return;
         }
 
         if let Some(arg) = msg.content.strip_prefix("!warn") {
-            command_warn(&self, &ctx, &msg, arg).await;
+            if let Err(why) = command_warn(&ctx, &msg, arg).await {
+                eprintln!("Err running the Warn command!: {}", why);
+            }
             return;
         }
         
         // if there's no valid command, run the reply handler!
-        handle_reply(&ctx, &msg).await;
+        if let Err(why) = handle_reply(&ctx, &msg).await {
+            eprintln!("Err running the List command!: {}", why);
+        }
     }
 }
 
@@ -110,7 +122,8 @@ impl EventHandler for Handler {
 #[tokio::main]
 async fn main() {
     // initialize the config file
-    reload_config().await.unwrap();
+    reload_config().await
+        .expect("Failed to initialize config!");
 
     // initialize Brenoulli for replies
     init_bern().await.unwrap();
@@ -124,21 +137,8 @@ async fn main() {
     let token_file = get_config().await.unwrap().token_file;
     let token = fs::read_to_string(token_file)
             .expect("Could not read token file!");
-
-    let database = sqlx::sqlite::SqlitePoolOptions::new()
-        // change this if more throughput is needed
-        .max_connections(5)
-        .connect_with(
-            sqlx::sqlite::SqliteConnectOptions::new()
-                .filename("pot_stuff.db")
-                .create_if_missing(true),
-        )
-        .await
-        .expect("Err Loading Database!");
-
-    let handler = Handler { 
-        database,
-    };
+    
+    let handler = Handler { };
 
     // additional intents go here!
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;

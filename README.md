@@ -6,9 +6,7 @@
 - A !reload command, for quickly reloading config on the fly
 
 # Build
-This project depends on: http://matteocorti.github.io/roll/  
-
-- make sure ya have Rust and the dependency installed
+- make sure ya have the Rust compiler installed
 - clone this repo  
 - run ``make build``
 
