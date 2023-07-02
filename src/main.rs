@@ -31,6 +31,29 @@ Options:
 Enviroment:
   POT_CONFIG=<path>   Specify the Config File (toml)";
 
+async fn command_handler(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn std::error::Error>> {
+    // split args into the command and its arguments
+    let arg = msg.content.split_once(" ").unwrap_or(("", ""));
+
+    // returned by the handler, indicates if a command was detected and ran
+    let mut cflg = true;
+
+    // match to existing commands
+    match arg.0 {
+        "!ls" => command_ls(&ctx, &msg).await?,
+        "!rm" => command_rm(&ctx, &msg, arg.1).await?,
+        "!reload" => command_reload(&ctx, &msg).await?,
+        "!r" => command_roll(&ctx, &msg, arg.1).await?,
+        "!shutdown" => command_shutdown(&ctx, &msg).await?,
+        "!warn" => command_warn(&ctx, &msg, arg.1).await?,
+        "!delay" => command_delay(&ctx, &msg, arg.1).await?,
+        &_ => cflg = false,
+    } 
+
+    Ok(cflg)
+}
+
+
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
@@ -62,53 +85,16 @@ impl EventHandler for Handler {
         // check if user is bot to prevent unwanted replies
         if msg.author.bot { return; }
 
-        /*
-         * Command Block! 
-         * here we parse the input and call commands if needed
-         */
-
-        if msg.content.trim().starts_with("!ls") {
-            if let Err(why) = command_ls(&ctx, &msg).await {
-                eprintln!("Err running the List command!: {}", why);
-            }
-            return;
-        }
-
-        if let Some(arg) = msg.content.strip_prefix("!rm") {
-            if let Err(why) = command_rm(&ctx, &msg, arg).await {
+        // here we parse the input and call commands if needed
+        match command_handler(&ctx, &msg).await {
+            Err(why) => { 
                 eprintln!("Err running the Remove command!: {}", why);
-            }
-            return;
+                return;
+            },
+            // return if a command was ran
+            Ok(flag) => if flag { return; }
         }
 
-        if msg.content.starts_with("!reload") {
-            if let Err(why) = command_reload(&ctx, &msg).await {
-                eprintln!("Err running the Reload command!: {}", why);
-            }
-            return;
-        }
-
-        if let Some(arg) = msg.content.strip_prefix("!r") {
-            if let Err(why) = command_roll(&ctx, &msg, arg).await {
-                eprintln!("Err running the Roll command!: {}", why);
-            }
-            return;
-        }
-
-        if msg.content.starts_with("!shutdown") {
-            if let Err(why) = command_shutdown(&ctx, &msg).await {
-                eprintln!("Err running the Shutdown command!: {}", why);
-            }
-            return;
-        }
-
-        if let Some(arg) = msg.content.strip_prefix("!warn") {
-            if let Err(why) = command_warn(&ctx, &msg, arg).await {
-                eprintln!("Err running the Warn command!: {}", why);
-            }
-            return;
-        }
-        
         // if there's no valid command, run the reply handler!
         if let Err(why) = handle_reply(&ctx, &msg).await {
             eprintln!("Err running the List command!: {}", why);
@@ -126,7 +112,8 @@ async fn main() {
         .expect("Failed to initialize config!");
 
     // initialize Brenoulli for replies
-    init_bern().await.unwrap();
+    init_bern().await
+        .expect("Failed to initialize the Bernoulli Distribution!");
 
     if env::args().skip(1).any(|a| a == "-h" || a == "--help") {
         println!("{}", HELP_MESSAGE);
@@ -148,6 +135,6 @@ async fn main() {
         .expect("Err Creating Client!");
 
     if let Err(why) = client.start().await {
-        println!("Client Err: {:?}", why)
+        eprintln!("Client Err: {:?}", why)
     }
 }

@@ -164,3 +164,28 @@ pub async fn command_reload(ctx: &Context, msg: &Message) -> Result<(), Box<dyn 
     }
     Ok(())
 }
+
+
+pub async fn command_delay(ctx: &Context, msg: &Message, arg: &str) -> Result<(), Box<dyn Error>> {
+    // parse args into an int
+    let delay = arg.trim().parse::<u16>();
+
+    // check if the parsing returns an error
+    if delay.is_err() {
+        msg.reply(&ctx, "Invalid Arguments!").await?;
+        return Ok(());
+    }
+
+    // if not, unwrap
+    let delay = delay.unwrap();
+    let mut config = get_config().await?.clone();
+
+    config.status.status_delay = delay;
+
+    // commit the changes
+    modify_config(config).await?;
+
+    // confirm to user
+    msg.reply(&ctx, format!("Changed Status Delay to {} Seconds", delay)).await?;
+    Ok(())
+}
