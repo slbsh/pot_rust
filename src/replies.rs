@@ -16,8 +16,13 @@ pub async fn init_bern() -> Result<(), Box<dyn Error>> {
     // lock ma boi bern so we can modify
     let mut bern_lock = REPLY_CHANCE.lock().await;
 
-    // read the chance from config and set that as the new value
-    let chance = get_config().await?.replies.chance as f64;
+    // read the chance from config, check if 0
+    let chance = match get_config().await?.replies.chance {
+        0 => return Err("reply chance cannot be 0".into()),
+        n => n as f64,
+    };
+    
+    // do the bern
     *bern_lock = Some(Bernoulli::new(1.0 / chance)?);
 
     Ok(())
