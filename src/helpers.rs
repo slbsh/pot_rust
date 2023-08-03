@@ -1,13 +1,12 @@
 use serenity::client::Context;
 use serenity::model::channel::Message;
 
-
 use std::error::Error;
 use rand::thread_rng;
 use rand::prelude::SliceRandom;
 
-
 use crate::config::*;
+
 
 // generate a random 'idiot reply'
 pub async fn idiot_reply() -> String {
@@ -57,3 +56,5 @@ pub async fn prompt_util(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn E
 
     Ok(false)
 }
+
+// bernoulli helper

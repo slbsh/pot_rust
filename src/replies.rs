@@ -1,3 +1,5 @@
+// Imports 
+
 use serenity::client::Context;
 use serenity::model::channel::Message;
 
@@ -7,12 +9,21 @@ use rand::seq::SliceRandom;
 
 use std::error::Error;
 
-
-
-
-
-
 use crate::config::*;
+
+// --- Begin code --- //
+
+// initialize a Bernoulli distribution with the chance from config
+async fn get_initial_chance() -> Result<f64, Box<dyn Error>> {
+    Ok(1.0 / CONFIG.read().await.replies.chance as f64)
+}
+const init_chance: f64 = get_initial_chance().await?;
+
+static BERN: Lazy<Bernoulli> = Lazy::new(|| {
+    Bernoulli::new(1.0 / CONFIG.read().await.replies.chance as f64)
+        .expect("Failed to initialize Bernoulli distribution")
+});
+
 
 pub async fn reply_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     

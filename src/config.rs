@@ -5,7 +5,52 @@ use tokio::sync::RwLock;
 use serde::Deserialize;
 use once_cell::sync::Lazy;
 
-pub static CONFIG: Lazy<RwLock<Conf>> = Lazy::new(|| RwLock::new(Conf::init()));
+// private function to process config file
+// pub static CONFIG: Lazy<RwLock<Conf>> = Lazy::new(|| RwLock::new(Conf::init()));
+
+
+// read config file and initialize a conf struct
+fn init_config() -> Conf {
+    let contents = fs::read_to_string(get_config_file())
+        .expect("Failed to read config");
+
+    toml::from_str(&contents)
+        .expect("Failed to parse config")
+}
+
+// get the config file path from the enviroment
+fn get_config_file() -> String {
+    match env::var("POT_CONFIG") {
+        Ok(path) => path,
+        Err(_) => panic!("POT_CONFIG not set"),
+    }
+}
+
+// get the warns file path from the enviroment
+fn get_warns_file() -> String {
+    match env::var("POT_WARNS") {
+        Ok(path) => path,
+        Err(_) => panic!("POT_WARNS not set"),
+    }
+}
+
+// convert a string to a u64
+fn to_u64(s: &str) -> u64 {
+    match s.parse::<u64>() {
+        Ok(n) => n,
+        Err(_) => panic!("Failed to parse string"),
+    }
+}
+
+// convert a string to a u8
+fn to_u8(s: &str) -> u8 {
+    match s.parse::<u8>() {
+        Ok(n) => n,
+        Err(_) => panic!("Failed to parse string"),
+    }
+}
+
+
 
 // struct to load the config into
 #[derive(Deserialize)]
