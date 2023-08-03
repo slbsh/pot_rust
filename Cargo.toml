@@ -14,7 +14,6 @@ serde = { version = "1.0.163", features = ["derive"]}
 rand = "0.8.5"
 chrono = "0.4.25"
 once_cell = "1.18.0"
-lazy_static = "1.4.0"
 ndm = "0.9.9" 
 
 [profile.release]

@@ -7,13 +7,13 @@ use rand::thread_rng;
 use rand::prelude::SliceRandom;
 use tokio::time::sleep;
 
-use crate::get_config;
+use crate::config::*;
 
 // generate a random 'idiot reply'
 pub async fn idiot_reply() -> String {
-    get_config().await
-        .expect("Err getting config!")
+    CONFIG.read().await
         .permissions.replies
+        .clone()
         .choose(&mut thread_rng())
         .expect("Err choosing an idiot reply!")
         .to_string() as String
@@ -21,7 +21,7 @@ pub async fn idiot_reply() -> String {
 
 // returns true if they match
 pub async fn check_perms(ctx: &Context, msg: &Message, level: u8) -> Result<bool, Box<dyn Error>> { 
-    let perms_config = get_config().await?.permissions;
+    let perms_config = &CONFIG.read().await.permissions;
     let user = &msg.author.id.to_string();
 
 
@@ -44,17 +44,16 @@ pub async fn prompt_util(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn E
     msg.reply(&ctx, "Are you Sure? (Y/n)").await?;
 
     // wait for the confirmation message from the same user
-    if let Some(response) = msg.author.await_reply(&ctx).await {
+    if let Some(response) = msg.author.await_reply(ctx).await {
         // check if the response is y or Y
         if response.content.eq_ignore_ascii_case("y") {
             msg.reply(&ctx, "As You Wish...").await?;
             return Ok(true);
 
-        } else {
-            msg.reply(&ctx, "Canceled!").await?;
-            return Ok(false);
         }
+
+        msg.reply(&ctx, "Canceled!").await?;
     }
-    sleep(time::Duration::from_secs(15)).await;
-    return Ok(false);
+
+    Ok(false)
 }

@@ -9,17 +9,18 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::process::exit;
 
-use crate::config::{get_config, reload_config};
+use crate::config::*;
 use crate::commands::*;
-use crate::replies::{handle_reply, init_bern};
+use crate::replies::reply_handler;
 
 mod config;
 mod commands;
 mod helpers;
 mod replies;
+mod warns;
 
 //passed to commands n such
-pub struct Handler { }
+pub struct Handler;
 
 static HELP_MESSAGE: &str =
 "pot - The WickedWiz Discord Bot!
@@ -31,26 +32,27 @@ Options:
 Enviroment:
   POT_CONFIG=<path>   Specify the Config File (toml)";
 
-async fn command_handler(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn std::error::Error>> {
+async fn command_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn std::error::Error>> {
     // split args into the command and its arguments
-    let arg = msg.content.split_once(" ").unwrap_or(("", ""));
-
-    // returned by the handler, indicates if a command was detected and ran
-    let mut cflg = true;
+    let (cmd, arg) = match msg.content.split_once(' ') {
+        Some(a) => a,
+        None => {
+            msg.reply(&ctx, "Missing Args").await?;
+            return Ok(());
+        },
+    };
 
     // match to existing commands
-    match arg.0 {
-        "!ls" => command_ls(&ctx, &msg).await?,
-        "!rm" => command_rm(&ctx, &msg, arg.1).await?,
-        "!reload" => command_reload(&ctx, &msg).await?,
-        "!r" => command_roll(&ctx, &msg, arg.1).await?,
-        "!shutdown" => command_shutdown(&ctx, &msg).await?,
-        "!warn" => command_warn(&ctx, &msg, arg.1).await?,
-        "!delay" => command_delay(&ctx, &msg, arg.1).await?,
-        &_ => cflg = false,
+    match cmd {
+        "!ls"       => command_ls(ctx, msg).await?,
+        "!rm"       => command_rm(ctx, msg, arg).await?,
+        "!r"        => command_roll(ctx, msg, arg).await?,
+        "!shutdown" => command_shutdown(ctx, msg).await?,
+        "!warn"     => command_warn(ctx, msg, arg).await?,
+        &_ => { msg.reply(&ctx, &format!("Invalid Cmd `{cmd}`")).await?; },
     } 
 
-    Ok(cflg)
+    Ok(())
 }
 
 
@@ -58,25 +60,22 @@ async fn command_handler(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn s
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("Ready! Connected as {}", ready.user.name);
-        // load stuff from config
-        let conf = &mut get_config().await
-            .unwrap()
-            .clone()
-            .status;
+        let stat = &CONFIG.read().await.status;
 
         // return if the status feature isn't enabled
-        if !conf.enable { return; }
+        if !stat.enable { return; }
+
+        let mut list = CONFIG.read().await.status.status_list.clone();
 
         loop {
             // shuffle the list if it's enabled in config
-            if conf.randomize {
-                conf.status_list.shuffle(&mut thread_rng());
+            if stat.randomize {
+                list.shuffle(&mut thread_rng());
             }
 
-            for status in &conf.status_list {
-                // set the playing status
-                ctx.set_activity(Activity::playing(status)).await;
-                sleep(time::Duration::from_secs(conf.status_delay.into())).await;
+            for s in &list {
+                ctx.set_activity(Activity::playing(s)).await;
+                sleep(time::Duration::from_secs(stat.status_delay.into())).await;
             }
         }
     }
@@ -85,19 +84,17 @@ impl EventHandler for Handler {
         // check if user is bot to prevent unwanted replies
         if msg.author.bot { return; }
 
-        // here we parse the input and call commands if needed
-        match command_handler(&ctx, &msg).await {
-            Err(why) => { 
-                eprintln!("Err running the Remove command!: {}", why);
+        // check prefix
+        if msg.content.starts_with(CONFIG.read().await.prefix) {
+            // here we parse the input and call commands if needed
+            if let Err(why) = command_handler(&ctx, &msg).await {
+                eprintln!("CMDERR: {}", why);
                 return;
-            },
-            // return if a command was ran
-            Ok(flag) => if flag { return; }
+            }
         }
 
-        // if there's no valid command, run the reply handler!
-        if let Err(why) = handle_reply(&ctx, &msg).await {
-            eprintln!("Err running the List command!: {}", why);
+        if let Err(why) = reply_handler(&ctx, &msg).await {
+            eprintln!("RPLERR: {}", why);
         }
     }
 }
@@ -107,21 +104,13 @@ impl EventHandler for Handler {
  */
 #[tokio::main]
 async fn main() {
-    // initialize the config file
-    reload_config().await
-        .expect("Failed to initialize config!");
-
-    // initialize Brenoulli for replies
-    init_bern().await
-        .expect("Failed to initialize the Bernoulli Distribution!");
-
     if env::args().skip(1).any(|a| a == "-h" || a == "--help") {
         println!("{}", HELP_MESSAGE);
         exit(0);
     }
 
     // read the token file
-    let token_file = get_config().await.unwrap().token_file;
+    let token_file = &CONFIG.read().await.token_file;
     let token = fs::read_to_string(token_file)
             .expect("Could not read token file!");
     

@@ -1,36 +1,22 @@
 use serenity::client::Context;
 use serenity::model::channel::Message;
-use tokio::sync::Mutex;
-use once_cell::sync::Lazy;
-use rand::distributions::{Bernoulli, Distribution};
 
+use rand::distributions::{Bernoulli, Distribution};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
+
 use std::error::Error;
 
-use crate::config::get_config;
+use tokio::pin;
+use tokio::task::spawn_local;
+use once_cell::sync::Lazy;
 
-static REPLY_CHANCE: Lazy<Mutex<Option<Bernoulli>>> = Lazy::new(|| Mutex::new(None));
 
-pub async fn init_bern() -> Result<(), Box<dyn Error>> {
-    // lock ma boi bern so we can modify
-    let mut bern_lock = REPLY_CHANCE.lock().await;
+use crate::config::*;
 
-    // read the chance from config, check if 0
-    let chance = match get_config().await?.replies.chance {
-        0 => return Err("reply chance cannot be 0".into()),
-        n => n as f64,
-    };
+pub async fn reply_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     
-    // do the bern
-    *bern_lock = Some(Bernoulli::new(1.0 / chance)?);
-
-    Ok(())
-}
-
-pub async fn handle_reply(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
-    
-    let repl = get_config().await?.replies;
+    let repl = &CONFIG.read().await.replies;
 
     // enabled? no bitches?
     if !repl.enable { return Ok(()); }
@@ -39,14 +25,19 @@ pub async fn handle_reply(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Er
 
     // ignore links if they're disabled in config
     // on discord that means images, gifs, &c
-    if !repl.url_blacklist && message.trim().starts_with("http") 
+    if !repl.url_blacklist && message.trim_start().starts_with("http") 
     { return Ok(()); }
     
-    let bern = REPLY_CHANCE.lock().await.unwrap().clone();
-
+    // read the chance from config, check if 0
+    let chance = match CONFIG.read().await.replies.chance {
+        0 => return Err("reply chance cannot be 0".into()),
+        n => n as f64,
+    };
+    // do the bern
+    let bern = Bernoulli::new(1.0 / chance)?;
+    
     // only send the message contains a trigger word or 1 in x chance
-    if !(repl.trigger.iter().any(|t| message.contains(&t.to_lowercase())) 
-        || bern.sample(&mut thread_rng()))
+    if !message.contains("pot") && !bern.sample(&mut thread_rng())
     { return Ok(()); }
 
     // shuffle the word list and pick as many as the iterations we want
