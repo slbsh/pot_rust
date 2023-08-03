@@ -49,6 +49,7 @@ async fn command_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn std
         "!r"        => command_roll(ctx, msg, arg).await?,
         "!shutdown" => command_shutdown(ctx, msg).await?,
         "!warn"     => command_warn(ctx, msg, arg).await?,
+        "!test"     => command_test(ctx, msg).await?,
         &_ => { msg.reply(&ctx, &format!("Invalid Cmd `{cmd}`")).await?; },
     } 
 

@@ -8,7 +8,7 @@ replies = ["Fuck You, Permission Denied", "You think like I drive", "You'll star
 
 [status]
 enable = true
-status_delay = 10
+status_delay = 120
 randomize = true
 status_list = ["d owo", "baklava booptis", "big juicy", "with your heart", "chess", "the long game", "along", "for good news", "a song on loop", "with borium", "with fire (my mixtape)", "in the bath", "a game to decide your fate", "under the bed", "for forgiveness", "with your feelings", "Sneak a Water Bottle Through an Airport", "Devil's Advocate", "conversational ukulele", "a dangerous game", "with my hair", "games with my heart", "monopoly", "with a piece of string", "outside", "tag", "the system", "fire", "mantis", "musical chairs", "hot potato", "with my food", "war", "mind games", "hot tomato", "god with your mortal soul", "the thing", "inside of your walls", "the waiting game", "despot", "professional hot potato"]
 

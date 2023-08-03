@@ -1,8 +1,8 @@
 use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 
-
 use std::{fs, env};
+
 
 pub static WARNS: Lazy<Mutex<Vec<Warns>>> = Lazy::new(|| Mutex::new(Warns::init()));
 
@@ -13,6 +13,7 @@ pub struct Warns {
     pub modr: u64,
     pub time: u64,
 }
+
 
 impl Warns {
     fn init() -> Vec<Self> {
@@ -58,10 +59,12 @@ impl Warns {
     }
 }
 
+
 fn get_warns_file() -> String {
     // check env var, if empty pick the default
     env::var("POT_CONFIG").unwrap_or("warns.omf".to_string())
 }
+
 
 fn to_u64(s: &str) -> u64 {
     s.parse::<u64>().expect("Failed to parse &str -> u64")

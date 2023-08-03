@@ -1,13 +1,13 @@
 use serenity::client::Context;
 use serenity::model::channel::Message;
-
-
+use rand::distributions::Bernoulli;
+use once_cell::sync::Lazy;
 use std::error::Error;
 use rand::thread_rng;
 use rand::prelude::SliceRandom;
 
-
 use crate::config::*;
+
 
 // generate a random 'idiot reply'
 pub async fn idiot_reply() -> String {
@@ -17,6 +17,7 @@ pub async fn idiot_reply() -> String {
         .expect("Err choosing an idiot reply!")
         .to_string() as String
 }
+
 
 // returns true if they match
 pub async fn check_perms(ctx: &Context, msg: &Message, level: u8) -> Result<bool, Box<dyn Error>> { 
@@ -34,6 +35,7 @@ pub async fn check_perms(ctx: &Context, msg: &Message, level: u8) -> Result<bool
 
     Ok(user_level >= level)
 }
+
 
 // prompt utility, for making SURE a user wants to do something
 pub async fn prompt_util(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn Error>> {
@@ -54,3 +56,14 @@ pub async fn prompt_util(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn E
 
     Ok(false)
 }
+
+
+// bernoulli helper
+pub static BERN: Lazy<Bernoulli> = Lazy::new(|| {
+    let initial_chance = match CONFIG.replies.chance {
+        0 => panic!("reply chance cannot be 0"),
+        n=> n as f64,
+    };
+    Bernoulli::new(1.0 / initial_chance)
+        .expect("Failed to initialize Bernoulli distribution")
+});
