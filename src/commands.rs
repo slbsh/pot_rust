@@ -33,7 +33,7 @@ pub async fn command_ls(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Erro
         return Ok(());
     }       
 
-    let mut message: String = Default::default();    
+    let mut message = String::new();    
 
     // append each row as a new line
     for warn in warns.iter() {
@@ -58,12 +58,9 @@ pub async fn command_rm(ctx: &Context, msg: &Message, arg: &str) -> Result<(), B
     if !check_perms(ctx, msg, 1).await? { return Ok(()); } 
 
     let arg = arg.trim().replace(&['<', '>', '@'][..], "");
-    let user = match arg.parse::<u64>() {
-        Ok(u) => u,
-        Err(_) => {
-            msg.reply(&ctx, &idiot_reply().await).await?;
-            return Ok(());
-        }
+    let Ok(user) = arg.parse::<u64>() else {
+        msg.reply(&ctx, &idiot_reply().await).await?;
+        return Ok(());
     };
 
     let mut warns = WARNS.lock().await;
@@ -116,14 +113,14 @@ pub async fn command_warn(ctx: &Context, msg: &Message, arg: &str) -> Result<(),
         .as_secs();
 
     //parse arg into userid 
-    let modr: u64 = msg.author.id.into();
-    let user: u64 = user
+    let modr: UserId = msg.author.id;
+    let user = UserId(user
         .replace(&['<', '>', '@'][..], "")
         .parse()
-        .unwrap_or(0);
+        .unwrap_or(0));
 
     // check if the user exists
-    if UserId::to_user(UserId(user), &ctx.http).await.is_err() {
+    if UserId::to_user(user, &ctx.http).await.is_err() {
         msg.reply(&ctx, &idiot_reply().await).await?;
         return Ok(());
     } 

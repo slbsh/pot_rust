@@ -22,7 +22,7 @@ mod warns;
 //passed to commands n such
 pub struct Handler;
 
-static HELP_MESSAGE: &str =
+const HELP_MESSAGE: &str =
 "pot - The WickedWiz Discord Bot!
 Usage: pot <OPTION>
 
@@ -34,12 +34,9 @@ Enviroment:
 
 async fn command_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn std::error::Error>> {
     // split args into the command and its arguments
-    let (cmd, arg) = match msg.content.split_once(' ') {
-        Some(a) => a,
-        None => {
-            msg.reply(&ctx, "Missing Args").await?;
-            return Ok(());
-        },
+    let Some((cmd, arg)) = msg.content.split_once(' ') else {
+        msg.reply(&ctx, "Missing Args").await?;
+        return Ok(());
     };
 
     // match to existing commands
@@ -51,9 +48,7 @@ async fn command_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn std
         "!warn"     => command_warn(ctx, msg, arg).await?,
         "!test"     => command_test(ctx, msg).await?,
         &_ => { msg.reply(&ctx, &format!("Invalid Cmd `{cmd}`")).await?; },
-    } 
-
-    Ok(())
+    } Ok(())
 }
 
 
@@ -73,7 +68,7 @@ impl EventHandler for Handler {
                 list.shuffle(&mut thread_rng());
             }
 
-            for s in &list {
+            for s in list.iter() {
                 ctx.set_activity(Activity::playing(s)).await;
                 sleep(time::Duration::from_secs(CONFIG.status.status_delay.into())).await;
             }
@@ -113,7 +108,7 @@ async fn main() {
     let token = fs::read_to_string(&CONFIG.token_file)
             .expect("Could not read token file!");
     
-    let handler = Handler { };
+    let handler = Handler;
 
     // additional intents go here!
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;

@@ -2,8 +2,8 @@ token_file = "token"
 prefix = '!'
 
 [permissions]
-owners = ["627015977233678336", "308203742736678914", "404608545091354626"]
-mods = ["438569265831084033", "492665061568151572", "322443039953911808"]
+ownr = [627015977233678336, 308203742736678914, 404608545091354626]
+modr = [438569265831084033, 492665061568151572, 322443039953911808]
 replies = ["Fuck You, Permission Denied", "You think like I drive", "You'll starve!", "You silly, twisted boy you", "Nice try Bro", "I dont wish to know that", "Speak English you fool!", "That's something I cannot allow to happen", "Wrong! You cheating scum!", "Are you on drugs?", "Just what do you think you're doing?", "Maybe if you used more than just two Braincells", "This mission is too important for me to allow you to jeopardize it", "Dumbest man alive ^^^", "Have you gone completely insane already?", "A monkey with a typwriter can type better than you", "This incident will be reported"]
 
 [status]
@@ -16,8 +16,8 @@ status_list = ["d owo", "baklava booptis", "big juicy", "with your heart", "ches
 enable = true
 chance = 16
 iterations = 3
-url_blacklist = false
-match_blacklist = ["the", "be", "to", "of", "and", "a", "in", "that", "i", "it", "for", "not", "on", "he", "as", "at", "am", "a", "an", "you", "are", "is", "no", "yes", "so", "she", "they"]
+url_block = false
+blacklist = ["the", "be", "to", "of", "and", "a", "in", "that", "i", "it", "for", "not", "on", "he", "as", "at", "am", "a", "an", "you", "are", "is", "no", "yes", "so", "she", "they"]
 list = ["no", "shut that bloody mouth of yours", "yeaaaah that's gonna be a no from me", "nah man", "noope", "good luck with that one chief", "sounds like a skill issue to me", "git gud", "git gud? see if that helps", ":smirk:", ":eyes:", ":cockroach:", "do you feel safe?", "are you a bot?", "how many fingers am I holding up?", "remember remember", "pray", "have fun", "that's not what your mum said last night", "potato tomato", "ohno", "baklava booptis", "would be a shame if someone got nom'd rn", "nice", "hehe", ":face_vomiting:", "wake up", ":middle_finger:", "fuck yeah!", "math rocks!", "the person above is a doodoohead", "that's on ye budy", "you won't get help where we're going", "Get f'd I suppose", "this is only the beginning :3", "would be a shame if someone did the thing...", "Do the thing!", "owo", "uwu", "get nom'd idiot", "*pummels you with a rubix cube*", "hai", "owo", "hewwo", "f off", "yer such a dick", "look at this idiot ^^^", "I wanna watch!", "dramaaaa!", "*hands the pot over* I swear officer it was them", "ahoy!", "no, goodbye", "hoi", "how ye doin?", "hello", "oy!", "negative", "no fu", "nah", "strongly disagree", "have you tried, fucking off?", "yes, fu", "absolute fucken lies", "yap", "yesyes", "Hot pots in your area looking for a plant. Click Now!", "Lies Oversee the Food Court", "hey, I'm pot", "hello pot I'm... wait hold up that's not how that one goes", "ye no worries", "yer welcome", "all thanks to me", "yo mama! haaaaaaa", "bazinga!", "feelin kinda cute rn", "beg", "shut", "time's up", "stoopid", "if being smart was a crime, you'd be innocent", "you know, the thing", "ya know it boss", "mr jenbfhadbhgsdbh where's the carcass", "those humericals looking hella cute rn", "no, Fuck you Buddy", "UNO Reverse", "WICKED WIZ released a new video: what went wrong with YOU!", "ha, good one! screw off", "i am inside of your walls", "among gas", "do you want to live?", "very special plan", "https://youtu.be/he5Bwd9Gn_E/", "no more worlds like this, no more days like that", "my own special plan for this world", "Minimal Tomfoolery", "OË AY he Æ ÆÆ OË AÉ GAÉ GAÉ E-E-E-E-E-E-E", "skibidipda", "check your closet", "it's cause I'm a pot, isn't it?!", "^^^", "this", "Are you SURE about that", "Not with Nutmeg", "uwu", "good one, bud :slight_smile:", "a white crayon is more useful than you", "get it away from me!", "beanin rn", "Sounds the same to me!", "boop", "Screw the rules, I have money!", "Alright Maggot, listen up, Pot's gonna teach you bout the pecking order", "YOU_DID", "You can't spell Meth without Me"]
-trigger = ["pot", "clay", "hello", "helo", "hey", "ahoy", "welcome", "@De Pot#8262", "<@971815908572020747>"]
+trigger = ["pot", "clay", "@De Pot#8262", "<@971815908572020747>"]
 

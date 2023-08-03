@@ -25,7 +25,7 @@ pub async fn reply_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn E
 
     // ignore links if they're disabled in config
     // on discord that means images, gifs, &c
-    if !repl.url_blacklist && message.trim_start().starts_with("http") 
+    if !repl.url_block && message.trim_start().starts_with("http") 
     { return Ok(()); }
         
     // only send the message contains a trigger word or 1 in x chance
@@ -51,7 +51,7 @@ pub async fn reply_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn E
         // ignoring blacklisted ones
         let is_match: bool = message
             .split_whitespace()
-            .filter(|w| !repl.match_blacklist.contains(&w.to_string()))
+            .filter(|w| !repl.blacklist.contains(&w.to_string()))
             .any(|w| reply.contains(w));
 
         // send anyway if the number of attempts is over a threshold

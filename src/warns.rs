@@ -1,5 +1,6 @@
 use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
+use serenity::model::prelude::UserId;
 
 use std::{fs, env};
 
@@ -8,9 +9,9 @@ pub static WARNS: Lazy<Mutex<Vec<Warns>>> = Lazy::new(|| Mutex::new(Warns::init(
 
 #[derive(Clone)]
 pub struct Warns {
-    pub user: u64,
+    pub user: UserId,
     pub resn: String,
-    pub modr: u64,
+    pub modr: UserId,
     pub time: u64,
 }
 
@@ -26,9 +27,9 @@ impl Warns {
         }
 
         let mut wrn = Warns {
-            user: 0,
+            user: UserId(0),
             resn: String::new(),
-            modr: 0,
+            modr: UserId(0),
             time: 0,
         };
 
@@ -41,9 +42,9 @@ impl Warns {
             };
 
             match key {
-                "user" => wrn.user = to_u64(val),
+                "user" => wrn.user = UserId(to_u64(val)),
                 "resn" => wrn.resn = String::from(val),
-                "modr" => wrn.modr = to_u64(val),
+                "modr" => wrn.modr = UserId(to_u64(val)),
                 "time" => wrn.time = to_u64(val),
                 &_ => panic!("Unrecognised key on line {}", i+1),
             }
