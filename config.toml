@@ -2,13 +2,13 @@ token_file = "token"
 prefix = '!'
 
 [permissions]
-owners = ["627015977233678336", "308203742736678914", "404608545091354626"]
+owners = ["627015977233678336", "308203742736678914", "404608545091354626", "357738904591532033"]
 mods = ["438569265831084033", "492665061568151572", "322443039953911808"]
 replies = ["Fuck You, Permission Denied", "You think like I drive", "You'll starve!", "You silly, twisted boy you", "Nice try Bro", "I dont wish to know that", "Speak English you fool!", "That's something I cannot allow to happen", "Wrong! You cheating scum!", "Are you on drugs?", "Just what do you think you're doing?", "Maybe if you used more than just two Braincells", "This mission is too important for me to allow you to jeopardize it", "Dumbest man alive ^^^", "Have you gone completely insane already?", "A monkey with a typwriter can type better than you", "This incident will be reported"]
 
 [status]
 enable = true
-status_delay = 10
+status_delay = 120
 randomize = true
 status_list = ["d owo", "baklava booptis", "big juicy", "with your heart", "chess", "the long game", "along", "for good news", "a song on loop", "with borium", "with fire (my mixtape)", "in the bath", "a game to decide your fate", "under the bed", "for forgiveness", "with your feelings", "Sneak a Water Bottle Through an Airport", "Devil's Advocate", "conversational ukulele", "a dangerous game", "with my hair", "games with my heart", "monopoly", "with a piece of string", "outside", "tag", "the system", "fire", "mantis", "musical chairs", "hot potato", "with my food", "war", "mind games", "hot tomato", "god with your mortal soul", "the thing", "inside of your walls", "the waiting game", "despot", "professional hot potato"]
 
