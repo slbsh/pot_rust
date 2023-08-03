@@ -21,6 +21,10 @@ impl Warns {
         let contents = fs::read_to_string(get_warns_file())
             .expect("Failed to read config");
 
+        if contents.is_empty() {
+            return Vec::new();
+        }
+
         let mut wrn = Warns {
             user: 0,
             resn: String::new(),
