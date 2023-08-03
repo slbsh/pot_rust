@@ -3,27 +3,16 @@
 use serenity::client::Context;
 use serenity::model::channel::Message;
 
-use rand::distributions::{Bernoulli, Distribution};
+use rand::distributions::Distribution;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 
 use std::error::Error;
 
 use crate::config::*;
+use crate::helpers::BERN;
 
 // --- Begin code --- //
-
-// initialize a Bernoulli distribution with the chance from config
-async fn get_initial_chance() -> Result<f64, Box<dyn Error>> {
-    Ok(1.0 / CONFIG.read().await.replies.chance as f64)
-}
-const init_chance: f64 = get_initial_chance().await?;
-
-static BERN: Lazy<Bernoulli> = Lazy::new(|| {
-    Bernoulli::new(1.0 / CONFIG.read().await.replies.chance as f64)
-        .expect("Failed to initialize Bernoulli distribution")
-});
-
 
 pub async fn reply_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     
@@ -38,18 +27,13 @@ pub async fn reply_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn E
     // on discord that means images, gifs, &c
     if !repl.url_blacklist && message.trim_start().starts_with("http") 
     { return Ok(()); }
-    
-    // read the chance from config, check if 0
-    let chance = match CONFIG.replies.chance {
-        0 => return Err("reply chance cannot be 0".into()),
-        n => n as f64,
-    };
-    // do the bern
-    let bern = Bernoulli::new(1.0 / chance)?;
-    
+        
     // only send the message contains a trigger word or 1 in x chance
-    if !message.contains("pot") && !bern.sample(&mut thread_rng())
-    { return Ok(()); }
+    let do_reply = BERN.sample(&mut thread_rng());
+    
+    if !message.contains("pot") && !do_reply {
+        return Ok(());
+    };
 
     // shuffle the word list and pick as many as the iterations we want
     let mut rand_replies = repl.list.clone();

@@ -3,6 +3,7 @@ use std::{env, fs};
 use serde::Deserialize;
 use once_cell::sync::Lazy;
 
+pub static CONFIG: Lazy<Conf> = Lazy::new(Conf::init);
 
 // struct to load the config into
 #[derive(Deserialize)]
