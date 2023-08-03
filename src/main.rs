@@ -33,21 +33,21 @@ Enviroment:
 
 async fn command_handler(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn std::error::Error>> {
     // split args into the command and its arguments
-    let arg = msg.content.split_once(" ").unwrap_or(("", ""));
+    let arg = msg.content.split_once(' ').unwrap_or(("", ""));
 
     // returned by the handler, indicates if a command was detected and ran
     let mut cflg = true;
 
     // match to existing commands
     match arg.0 {
-        "!ls" => command_ls(&ctx, &msg).await?,
-        "!rm" => command_rm(&ctx, &msg, arg.1).await?,
-        "!reload" => command_reload(&ctx, &msg).await?,
-        "!r" => command_roll(&ctx, &msg, arg.1).await?,
-        "!shutdown" => command_shutdown(&ctx, &msg).await?,
-        "!warn" => command_warn(&ctx, &msg, arg.1).await?,
-        "!delay" => command_delay(&ctx, &msg, arg.1).await?,
-        "!test" => command_test(&ctx, &msg).await?,
+        "!ls" => command_ls(ctx, msg).await?,
+        "!rm" => command_rm(ctx, msg, arg.1).await?,
+        "!reload" => command_reload(ctx, msg).await?,
+        "!r" => command_roll(ctx, msg, arg.1).await?,
+        "!shutdown" => command_shutdown(ctx, msg).await?,
+        "!warn" => command_warn(ctx, msg, arg.1).await?,
+        "!delay" => command_delay(ctx, msg, arg.1).await?,
+        "!test" => command_test(ctx, msg).await?,
         &_ => cflg = false,
     } 
 
@@ -60,6 +60,7 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("Ready! Connected as {}", ready.user.name);
         // load stuff from config
+        println!("Loading Config...");
         let conf = &mut get_config().await
             .unwrap()
             .clone()
@@ -72,6 +73,7 @@ impl EventHandler for Handler {
             // shuffle the list if it's enabled in config
             if conf.randomize {
                 conf.status_list.shuffle(&mut thread_rng());
+                println!("Shuffling Status List...");
             }
 
             for status in &conf.status_list {
@@ -115,7 +117,7 @@ async fn main() {
     // initialize Brenoulli for replies
     init_bern().await
         .expect("Failed to initialize the Bernoulli Distribution!");
-
+    // println!("Brenoulli Initialized! {}", bern_lock().await);
     if env::args().skip(1).any(|a| a == "-h" || a == "--help") {
         println!("{}", HELP_MESSAGE);
         exit(0);

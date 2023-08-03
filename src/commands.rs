@@ -22,7 +22,7 @@ pub async fn command_test(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Er
 // list warns
 pub async fn command_ls(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     // check if user is allowed to do that
-    if !check_perms(&ctx, &msg, 1).await? { return Ok(()); } 
+    if !check_perms(ctx, msg, 1).await? { return Ok(()); } 
 
     // get warns from config
     let warns_list = get_config().await?.warns;
@@ -55,7 +55,7 @@ pub async fn command_ls(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Erro
 // remove a warn
 pub async fn command_rm(ctx: &Context, msg: &Message, arg: &str) -> Result<(), Box<dyn Error>> {
     // handling perms
-    if !check_perms(&ctx, &msg, 1).await? { return Ok(()); } 
+    if !check_perms(ctx, msg, 1).await? { return Ok(()); } 
 
     let user = arg
         .trim()
@@ -96,7 +96,7 @@ pub async fn command_roll(ctx: &Context, msg: &Message, arg: &str) -> Result<(),
 
 pub async fn command_shutdown(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     // check if the user is in the owner group
-    if !check_perms(&ctx, &msg, 2).await? { return Ok(()); } 
+    if !check_perms(ctx, msg, 2).await? { return Ok(()); } 
 
     if prompt_util(ctx, msg).await? {
         println!("!shutdown recieved; Exiting...");
@@ -107,10 +107,10 @@ pub async fn command_shutdown(ctx: &Context, msg: &Message) -> Result<(), Box<dy
 
 pub async fn command_warn(ctx: &Context, msg: &Message, arg: &str) -> Result<(), Box<dyn Error>> {
     // check perms
-    if !check_perms(&ctx, &msg, 1).await? { return Ok(()); } 
+    if !check_perms(ctx, msg, 1).await? { return Ok(()); } 
             
     // split into user and reason
-    let arg = arg.trim().split_once(" ").unwrap_or(("", ""));
+    let arg = arg.trim().split_once(' ').unwrap_or(("", ""));
 
     // make sure none are empty
     if arg.0.is_empty() || arg.1.is_empty() {
@@ -131,7 +131,7 @@ pub async fn command_warn(ctx: &Context, msg: &Message, arg: &str) -> Result<(),
         .unwrap_or(0);
 
     // check if the user exists
-    if let Err(_) = UserId::to_user(UserId(user), &ctx.http).await {
+    if (UserId::to_user(UserId(user), &ctx.http).await).is_err() {
         msg.reply(&ctx, &idiot_reply().await).await?;
         return Ok(());
     } 
@@ -140,17 +140,17 @@ pub async fn command_warn(ctx: &Context, msg: &Message, arg: &str) -> Result<(),
 
     // fill out them fields boss
     let new_warn = Warn {
-        user: user,
+        user,
         reason: arg.1.to_string(),
-        moderator: moderator,
+        moderator,
         time: timestamp,
     };
 
     // add the new warn to the list
     if config.warns.is_none() {
         config.warns = Some(vec![new_warn])
-    } else {
-        config.warns.as_mut().map(|v| v.push(new_warn));
+    } else { 
+        if let Some(v) = config.warns.as_mut() { v.push(new_warn) } 
     }
 
     // commit the changes
@@ -163,7 +163,7 @@ pub async fn command_warn(ctx: &Context, msg: &Message, arg: &str) -> Result<(),
 
 pub async fn command_reload(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     // perms check
-    if !check_perms(&ctx, &msg, 2).await? { return Ok(()); } 
+    if !check_perms(ctx, msg, 2).await? { return Ok(()); } 
 
     if prompt_util(ctx, msg).await? {
         println!("Reloading Config...");

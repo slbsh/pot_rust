@@ -1,8 +1,8 @@
 token_file = "token"
 
 [permissions]
-owners = ["627015977233678336", "308203742736678914", "404608545091354626"]
-mods = ["438569265831084033", "492665061568151572", "322443039953911808"]
+owners = ["357738904591532033"]
+mods = ["357738904591532033"]
 replies = ["Fuck You, Permission Denied", "You think like I drive", "You'll starve!", "You silly, twisted boy you", "Nice try Bro", "I dont wish to know that", "Speak English you fool!", "That's something I cannot allow to happen", "Wrong! You cheating scum!", "Are you on drugs?", "Just what do you think you're doing?", "Maybe if you used more than just two Braincells", "This mission is too important for me to allow you to jeopardize it", "Dumbest man alive ^^^", "Have you gone completely insane already?", "A monkey with a typwriter can type better than you", "This incident will be reported"]
 
 [status]

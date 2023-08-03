@@ -42,7 +42,7 @@ pub async fn handle_reply(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Er
     if !repl.url_blacklist && message.trim().starts_with("http") 
     { return Ok(()); }
     
-    let bern = REPLY_CHANCE.lock().await.unwrap().clone();
+    let bern = REPLY_CHANCE.lock().await.unwrap();
 
     // only send the message contains a trigger word or 1 in x chance
     if !(repl.trigger.iter().any(|t| message.contains(&t.to_lowercase())) 

@@ -44,7 +44,7 @@ pub async fn prompt_util(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn E
     msg.reply(&ctx, "Are you Sure? (Y/n)").await?;
 
     // wait for the confirmation message from the same user
-    if let Some(response) = msg.author.await_reply(&ctx).await {
+    if let Some(response) = msg.author.await_reply(ctx).await {
         // check if the response is y or Y
         if response.content.eq_ignore_ascii_case("y") {
             msg.reply(&ctx, "As You Wish...").await?;
@@ -56,5 +56,5 @@ pub async fn prompt_util(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn E
         }
     }
     sleep(time::Duration::from_secs(15)).await;
-    return Ok(false);
+    Ok(false)
 }

@@ -4,7 +4,7 @@ use tokio::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 use lazy_static::lazy_static;
-use toml;
+
 
 lazy_static! {
     static ref CONFIG: Mutex<Option<Conf>> = Mutex::new(None);
