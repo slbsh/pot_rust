@@ -1,5 +1,5 @@
 use std::{env, fs};
-use std::error::Error;
+
 use tokio::sync::RwLock;
 
 use serde::Deserialize;
@@ -12,7 +12,6 @@ pub static CONFIG: Lazy<RwLock<Conf>> = Lazy::new(|| RwLock::new(Conf::init()));
 pub struct Conf {
     pub token_file: String,
     pub prefix: char,
-    pub warns_file: String,
     pub permissions: Perms,
     pub status: Stat,
     pub replies: Reply,

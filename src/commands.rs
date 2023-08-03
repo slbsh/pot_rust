@@ -10,7 +10,7 @@ use chrono::{TimeZone, Utc};
 use ndm::RollSet;
 
 use crate::helpers::*; 
-use crate::config::*;
+
 use crate::warns::*;
 
 // list warns
@@ -36,7 +36,7 @@ pub async fn command_ls(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Erro
             .to_string();
 
         writeln!(message, "User: <@{}> \nReason: {} \nModerator: <@{}> \nTime: {}\n",
-            warn.user, warn.reason, warn.moderator, parsed_time
+            warn.user, warn.resn, warn.modr, parsed_time
         )?;
     }
 
@@ -108,7 +108,7 @@ pub async fn command_warn(ctx: &Context, msg: &Message, arg: &str) -> Result<(),
         .as_secs();
 
     //parse arg into userid 
-    let moderator: u64 = msg.author.id.into();
+    let modr: u64 = msg.author.id.into();
     let user: u64 = user
         .replace(&['<', '>', '@'][..], "")
         .parse()
@@ -123,8 +123,8 @@ pub async fn command_warn(ctx: &Context, msg: &Message, arg: &str) -> Result<(),
     // fill out them fields boss
     let new_warn = Warns {
         user,
-        reason: reason.to_string(),
-        moderator,
+        resn: reason.to_string(),
+        modr,
         time,
     };
 
