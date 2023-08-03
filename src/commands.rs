@@ -12,6 +12,13 @@ use ndm::RollSet;
 use crate::helpers::*; 
 use crate::config::*;
 
+// test command
+pub async fn command_test(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
+    msg.reply(&ctx, "Test").await?;
+    Ok(())
+}
+
+
 // list warns
 pub async fn command_ls(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     // check if user is allowed to do that

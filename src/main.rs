@@ -47,6 +47,7 @@ async fn command_handler(ctx: &Context, msg: &Message) -> Result<bool, Box<dyn s
         "!shutdown" => command_shutdown(&ctx, &msg).await?,
         "!warn" => command_warn(&ctx, &msg, arg.1).await?,
         "!delay" => command_delay(&ctx, &msg, arg.1).await?,
+        "!test" => command_test(&ctx, &msg).await?,
         &_ => cflg = false,
     } 
 
