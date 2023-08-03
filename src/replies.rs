@@ -7,16 +7,11 @@ use rand::seq::SliceRandom;
 
 use std::error::Error;
 
-
-
-
-
-
 use crate::config::*;
 
 pub async fn reply_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn Error>> {
     
-    let repl = &CONFIG.read().await.replies;
+    let repl = &CONFIG.replies;
 
     // enabled? no bitches?
     if !repl.enable { return Ok(()); }
@@ -29,7 +24,7 @@ pub async fn reply_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn E
     { return Ok(()); }
     
     // read the chance from config, check if 0
-    let chance = match CONFIG.read().await.replies.chance {
+    let chance = match CONFIG.replies.chance {
         0 => return Err("reply chance cannot be 0".into()),
         n => n as f64,
     };

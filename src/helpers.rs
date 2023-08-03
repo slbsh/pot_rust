@@ -11,8 +11,7 @@ use crate::config::*;
 
 // generate a random 'idiot reply'
 pub async fn idiot_reply() -> String {
-    CONFIG.read().await
-        .permissions.replies
+    CONFIG .permissions.replies
         .clone()
         .choose(&mut thread_rng())
         .expect("Err choosing an idiot reply!")
@@ -21,13 +20,11 @@ pub async fn idiot_reply() -> String {
 
 // returns true if they match
 pub async fn check_perms(ctx: &Context, msg: &Message, level: u8) -> Result<bool, Box<dyn Error>> { 
-    let perms_config = &CONFIG.read().await.permissions;
     let user = &msg.author.id.to_string();
 
-
     let user_level = match user {
-        _ if perms_config.mods.contains(user) => 1, 
-        _ if perms_config.owners.contains(user) => 2, 
+        _ if CONFIG.permissions.mods.contains(user) => 1, 
+        _ if CONFIG.permissions.owners.contains(user) => 2, 
         _ => 0,
     };
 

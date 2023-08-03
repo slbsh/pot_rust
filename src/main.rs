@@ -60,22 +60,21 @@ async fn command_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn std
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("Ready! Connected as {}", ready.user.name);
-        let stat = &CONFIG.read().await.status;
 
         // return if the status feature isn't enabled
-        if !stat.enable { return; }
+        if !CONFIG.status.enable { return; }
 
-        let mut list = CONFIG.read().await.status.status_list.clone();
+        let mut list = CONFIG.status.status_list.clone();
 
         loop {
             // shuffle the list if it's enabled in config
-            if stat.randomize {
+            if CONFIG.status.randomize {
                 list.shuffle(&mut thread_rng());
             }
 
             for s in &list {
                 ctx.set_activity(Activity::playing(s)).await;
-                sleep(time::Duration::from_secs(stat.status_delay.into())).await;
+                sleep(time::Duration::from_secs(CONFIG.status.status_delay.into())).await;
             }
         }
     }
@@ -85,7 +84,7 @@ impl EventHandler for Handler {
         if msg.author.bot { return; }
 
         // check prefix
-        if msg.content.starts_with(CONFIG.read().await.prefix) {
+        if msg.content.starts_with(CONFIG.prefix) {
             // here we parse the input and call commands if needed
             if let Err(why) = command_handler(&ctx, &msg).await {
                 eprintln!("CMDERR: {}", why);
@@ -110,8 +109,7 @@ async fn main() {
     }
 
     // read the token file
-    let token_file = &CONFIG.read().await.token_file;
-    let token = fs::read_to_string(token_file)
+    let token = fs::read_to_string(&CONFIG.token_file)
             .expect("Could not read token file!");
     
     let handler = Handler { };

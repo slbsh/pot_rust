@@ -1,11 +1,9 @@
 use std::{env, fs};
 
-use tokio::sync::RwLock;
-
 use serde::Deserialize;
 use once_cell::sync::Lazy;
 
-pub static CONFIG: Lazy<RwLock<Conf>> = Lazy::new(|| RwLock::new(Conf::init()));
+pub static CONFIG: Lazy<Conf> = Lazy::new(Conf::init);
 
 // struct to load the config into
 #[derive(Deserialize)]
