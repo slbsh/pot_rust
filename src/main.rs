@@ -19,7 +19,6 @@ mod helpers;
 mod replies;
 mod warns;
 
-//passed to commands n such
 pub struct Handler;
 
 const HELP_MESSAGE: &str =
@@ -33,20 +32,25 @@ Enviroment:
   POT_CONFIG=<path>   Specify the Config File (toml)";
 
 async fn command_handler(ctx: &Context, msg: &Message) -> Result<(), Box<dyn std::error::Error>> {
+    // no args commands
+    match msg.content.as_str() {
+        "!ls"       => command_ls(ctx, msg).await?,
+        "!test"     => command_test(ctx, msg).await?,
+        "!shutdown" => command_shutdown(ctx, msg).await?,
+        &_ => return Ok(()),
+    }
+
     // split args into the command and its arguments
     let Some((cmd, arg)) = msg.content.split_once(' ') else {
         msg.reply(&ctx, "Missing Args").await?;
         return Ok(());
     };
 
-    // match to existing commands
+    // commands with args
     match cmd {
-        "!ls"       => command_ls(ctx, msg).await?,
         "!rm"       => command_rm(ctx, msg, arg).await?,
         "!r"        => command_roll(ctx, msg, arg).await?,
-        "!shutdown" => command_shutdown(ctx, msg).await?,
         "!warn"     => command_warn(ctx, msg, arg).await?,
-        "!test"     => command_test(ctx, msg).await?,
         &_ => { msg.reply(&ctx, &format!("Invalid Cmd `{cmd}`")).await?; },
     } Ok(())
 }

@@ -36,6 +36,10 @@ impl Warns {
         let mut out: Vec<Warns> = Vec::new();
 
         for (i, ln) in contents.lines().enumerate() {
+            if ln.is_empty() {
+                continue;
+            }
+
             let (key, val) = match ln.split_once('=') {
                 Some((k, v)) => (k.trim(), v.trim()),
                 None => panic!("Failed to parse line {}", i+1),
